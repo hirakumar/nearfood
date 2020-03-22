@@ -1,13 +1,13 @@
 <template>
   <div class="hello">
-   {{allFoodTrucks}}
- 
+   
+
    <LMap
       v-if="showMap"
       :zoom="zoom"
       :center="center"
       :options="mapOptions"
-      style="height: 500px"
+      style="height: 800px"
       @update:center="centerUpdate"
       @update:zoom="zoomUpdate"
     >
@@ -15,16 +15,19 @@
         :url="url"
         :attribution="attribution"
       />
-      <template v-for="loc in locationList">
-      <LMarker :lat-lng="loc" :icon="icon">
+      <template v-for="(loc,index) in allFoodTrucks">
+      <LMarker :lat-lng="setLatLng(loc.latitude,loc.longitude)" :icon="icon" v-if="index<100">
         <LPopup>
           <div @click="innerClick">
-            I am a popup
-            <p v-show="showParagraph">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
-              sed pretium nisl, ut sagittis sapien. Sed vel sollicitudin nisi.
-              Donec finibus semper metus id malesuada.
+            <h5 v-html="loc.name"></h5>
+            
+            <p v-html="loc.foodItems">          
             </p>
+            <p v-html="loc.address">
+              </p>
+              <p>
+                <b-button>Order Food Item</b-button>
+                </p>
           </div>
         </LPopup>
       </LMarker>
@@ -72,17 +75,11 @@ export default {
   },
   data() {
     return {
-      zoom: 10,
-      center: latLng(47.41322, -1.219482),
+      zoom: 14,
+      center: latLng(37.7806943774082,-122.409668813219),
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-      locationList:[
-        latLng(47.34905859411952,-1.0656738281250002),
-         latLng(47.41322, -1.219482),
-         latLng(47.135556272359196,-1.0972595214843752),
-         latLng(47.5079250985124,-1.481781005859375),
-         latLng(47.50050343862717,-1.5998840332031252)
-      ],
+     
       withPopup: latLng(47.41322, -1.219482),
       withTooltip: latLng(47.41422, -1.350482),
       currentZoom: 11.5,
@@ -106,13 +103,21 @@ export default {
       get(){
        // console.log("Called from getters",store.getters['getAllFoodShop']);
        // console.log(state)
-       return "Empty array";
+      
+      return this.$store.getters.getAllFoodTrucks;
+ 
+      },
+      set(val){
+        return val;
       }
     }
   },
   methods: {
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
+    },
+    setLatLng(lat,lng){
+      return latLng(parseFloat(lat),parseFloat(lng));
     },
     getImg(img){
       return '../assets/'+img;
@@ -136,6 +141,7 @@ export default {
   mounted(){
     //console.log(L.control.locate().addTo(map));
     this.getAllShops();
+    console.log(latLng(47.50050343862717,-1.5998840332031252));
   }
 };
 </script>

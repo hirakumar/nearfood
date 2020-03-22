@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import {API} from '../api/API.js'
 import axios from 'axios'
-
+import { latLng } from "leaflet";
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -10,41 +10,45 @@ export default new Vuex.Store({
     foodTrucks:[]
   },
   mutations: {
-    setAllFoodShop : function(context,store){
-      console.log("Mutation setallfood:");
-     // this.state.foodTrucks=data;
-      console.log(context)
+    setAllFoodShop : function({commit, state,context},data){
+      console.log("Mutation setallfood:", data);
+      this.state.foodTrucks=data;
+     
 
     }
   },
   getters:{
-    getAllFoodShop: function(){
-      console.log("Getters :",this.state.foodTrucks);
-      //return this.state.foodTrucks
+    getAllFoodTrucks: function(state){
+      return state.foodTrucks;
     }
   },
   actions: {
-    getAllShops: async function(context,getters,mutation){
+    getAllShops:  function(context){
       console.log("Action : Get All Shops");
       
-      await API.getAllFoodShopData().then((response)=>{
+     return new Promise((resolve, reject) => {
+     
+   
+       API.getAllFoodShopData().then((response)=>{
         console.log("resolve");
        
-        var foodTrucks = response.data.filter(item => item.facilitytype === "Truck");
-        var myfoodTrucks = foodTrucks.map((item)=>{
+        var foodTrucks = response.data.filter(item => item.facilitytype === "Truck").map((item)=>{
           return {
             id: item.objectid,
             name : item.applicant,
             address : item.address,
             foodItems : item.fooditems,
             latitude : item.latitude,
-            longitude: item.longitude
+            longitude: item.longitude,
+          
+            
 
           }
         })
-        console.log("Nedd to stae", myfoodTrucks);
+        
       
-        context.commit('setAllFoodShop')
+        context.commit('setAllFoodShop',foodTrucks);
+        resolve(foodTrucks);
         
         
        // resolve();
@@ -52,6 +56,7 @@ export default new Vuex.Store({
         console.log("Got something error");
         console.log(error)
       })
+    })
      
       
     }

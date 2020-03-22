@@ -16,11 +16,31 @@
         :attribution="attribution"
       />
       <template v-for="(loc,index) in allFoodTrucks">
-      <LMarker :lat-lng="setLatLng(loc.latitude,loc.longitude)" :icon="icon" v-if="index<100">
+      <template v-if="index<100">
+      <LMarker v-if="farFoodTruck(37.7806943774082,-122.409668813219,loc.latitude,loc.longitude)" :lat-lng="setLatLng(loc.latitude,loc.longitude)"  :icon="icon">
         <LPopup>
           <div @click="innerClick">
             <h5 v-html="loc.name"></h5>
-            
+            <p>
+             No: {{distance(37.7806943774082,-122.409668813219,loc.latitude,loc.longitude)}}
+            </p>
+            <p v-html="loc.foodItems">          
+            </p>
+            <p v-html="loc.address">
+              </p>
+              <p>
+                <b-button>Order Food Item</b-button>
+                </p>
+          </div>
+        </LPopup>
+      </LMarker>
+      <LMarker v-else :lat-lng="setLatLng(loc.latitude,loc.longitude)" :options="farOption" :icon="iconNext" >
+        <LPopup>
+          <div @click="innerClick">
+            <h5 v-html="loc.name"></h5>
+            <p>
+            Yes  {{distance(37.7806943774082,-122.409668813219,loc.latitude,loc.longitude)}}
+            </p>
             <p v-html="loc.foodItems">          
             </p>
             <p v-html="loc.address">
@@ -32,37 +52,40 @@
         </LPopup>
       </LMarker>
       </template>
+       </template>
 
+      <LMarker :lat-lng="center" :icon="me" />
+     
+     <LCircle
+      :lat-lng="center"
+      :radius="circle.radius"
+      :color="circle.color"
+      :fill="circle.fill"
+      :opacity="circle.opacity"
+      :className="circle.className"
+    />
+    
       <LControl position="topright" >
 <b-form-input placeholder="Search Food Truck"></b-form-input>
 </LControl>
-      <!--
-      <LMarker :lat-lng="withTooltip" :icon="icon">
-        <LTooltip :options="{ permanent: true, interactive: true }">
-          <div @click="innerClick">
-            I am a tooltip
-            <p v-show="showParagraph">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
-              sed pretium nisl, ut sagittis sapien. Sed vel sollicitudin nisi.
-              Donec finibus semper metus id malesuada.
-            </p>
-          </div>
-        </LTooltip>
-      </LMarker>
-      -->
+<LControl position="bottomleft" >
+  <b-alert  show dismissible><strong>Nearest Food Truck around 1Km is bounded in red </strong></b-alert>
+</LControl>
+   
     </LMap> 
+   
   </div>
 </template>
 
 <script>
 
 import { latLng } from "leaflet";
-import { LMap, LMarker,LTileLayer, LPopup, LTooltip, LIcon, LControl } from "vue2-leaflet";
+import { LMap, LMarker,LTileLayer, LPopup, LTooltip, LIcon, LControl,LCircle } from "vue2-leaflet";
 import Vue2LeafletLocatecontrol from 'vue2-leaflet-locatecontrol'
 import 'leaflet/dist/leaflet.css';
 
 export default {
-  name: "HelloWorld",
+  name: "TrukMap",
   components: {
     LMap,
     LTileLayer,
@@ -71,11 +94,20 @@ export default {
     LTooltip,
     LIcon,
     Vue2LeafletLocatecontrol,
-    LControl
+    LControl,
+    LCircle
   },
   data() {
     return {
-      zoom: 14,
+      circle:{
+        radius:1000,
+        color:'red',
+        fill:true,
+        fillOpacity:1,
+        opacity:0.5,
+        className:'circle'
+        },
+      zoom: 14.5,
       center: latLng(37.7806943774082,-122.409668813219),
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -88,9 +120,22 @@ export default {
       mapOptions: {
         zoomSnap: 0.5
       },
+      farOption :{
+          opacity:0.5
+      },
       showMap: true,
       icon: L.icon({
         iconUrl: 'serving-dish.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 37]
+      }),
+       iconNext: L.icon({
+        iconUrl: 'serving-dish-bw.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 37]
+      }),
+       me: L.icon({
+        iconUrl: 'location.png',
         iconSize: [32, 32],
         iconAnchor: [16, 37]
       }),
@@ -116,9 +161,42 @@ export default {
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
+    
     setLatLng(lat,lng){
       return latLng(parseFloat(lat),parseFloat(lng));
     },
+    distance(lat1, lon1, lat2, lon2) {
+	if ((lat1 == lat2) && (lon1 == lon2)) {
+		return 0;
+	}
+	else {
+		var radlat1 = Math.PI * lat1/180;
+		var radlat2 = Math.PI * lat2/180;
+		var theta = lon1-lon2;
+		var radtheta = Math.PI * theta/180;
+		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+		if (dist > 1) {
+			dist = 1;
+		}
+		dist = Math.acos(dist);
+		dist = dist * 180/Math.PI;
+		dist = dist * 60 * 1.1515;
+    /*
+		if (unit=="K") { dist = dist * 1.609344 }
+    if (unit=="m") { dist = dist * 1.609344*1000 }
+		if (unit=="N") { dist = dist * 0.8684 }*/
+    dist= dist * 1.609344*1000
+		return dist;
+	}
+},
+farFoodTruck(lat1, lon1, lat2, lon2){
+   console.log(parseFloat(this.distance(lat1, lon1, lat2, lon2)));
+   if(this.distance(lat1, lon1, lat2, lon2)<1000){
+     return true;
+   }else{
+     return false;
+   }
+},
     getImg(img){
       return '../assets/'+img;
     },
@@ -131,7 +209,7 @@ export default {
       this.showParagraph = !this.showParagraph;
     },
     innerClick() {
-      alert("Click!");
+      //alert("Click!");
     },
     getAllShops(){
       console.log("get All Shops");

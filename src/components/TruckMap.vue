@@ -1,7 +1,5 @@
 <template>
   <div class="hello">
-   
-
    <LMap
       v-if="showMap"
       :zoom="zoom"
@@ -17,44 +15,45 @@
       />
       <template v-for="(loc,index) in allFoodTrucks">
       <template v-if="index<100">
-      <LMarker v-if="farFoodTruck(37.7806943774082,-122.409668813219,loc.latitude,loc.longitude)" :lat-lng="setLatLng(loc.latitude,loc.longitude)"  :icon="icon">
-        <LPopup>
-          <div @click="innerClick">
-            <h5 v-html="loc.name"></h5>
-            <p>
-             No: {{distance(37.7806943774082,-122.409668813219,loc.latitude,loc.longitude)}}
-            </p>
-            <p v-html="loc.foodItems">          
-            </p>
-            <p v-html="loc.address">
+        <LMarker :zIndexOffset="markerZindex" v-if="farFoodTruck(center.lat,center.lng,loc.latitude,loc.longitude)" :lat-lng="setLatLng(loc.latitude,loc.longitude)"  :icon="icon">
+          <LPopup>
+            <div @click="innerClick">
+              <h5 v-html="loc.name"></h5>
+              
+              <p v-html="loc.foodItems">          
               </p>
-              <p>
-                <b-button>Order Food Item</b-button>
+              <p v-html="loc.address">
                 </p>
-          </div>
-        </LPopup>
-      </LMarker>
-      <LMarker v-else :lat-lng="setLatLng(loc.latitude,loc.longitude)" :options="farOption" :icon="iconNext" >
-        <LPopup>
-          <div @click="innerClick">
-            <h5 v-html="loc.name"></h5>
-            <p>
-            Yes  {{distance(37.7806943774082,-122.409668813219,loc.latitude,loc.longitude)}}
-            </p>
-            <p v-html="loc.foodItems">          
-            </p>
-            <p v-html="loc.address">
+                <p>
+              Farest : {{distance(center.lat,center.lng,loc.latitude,loc.longitude)}}
               </p>
+                <p>
+                  <b-button>Order Food Item</b-button>
+                  </p>
+            </div>
+          </LPopup>
+        </LMarker>
+        <LMarker :zIndexOffset="markerZindex" v-else :lat-lng="setLatLng(loc.latitude,loc.longitude)" :options="farOption" :icon="iconNext" >
+          <LPopup>
+            <div @click="innerClick">
+              <h5 v-html="loc.name"></h5>
               <p>
-                <b-button>Order Food Item</b-button>
+              Farest : {{distance(center.lat,center.lng,loc.latitude,loc.longitude)}}
+              </p>
+              <p v-html="loc.foodItems">          
+              </p>
+              <p v-html="loc.address">
                 </p>
-          </div>
-        </LPopup>
-      </LMarker>
+                <p>
+                  <b-button>Order Food Item</b-button>
+                  </p>
+            </div>
+          </LPopup>
+        </LMarker>
       </template>
        </template>
 
-      <LMarker :lat-lng="center" :icon="me" />
+      <LMarker :lat-lng="center" :zIndexOffset="meZindex" :icon="me" :draggable="meDragabble" @update:latLng="myLat" />
      
      <LCircle
       :lat-lng="center"
@@ -65,12 +64,11 @@
       :className="circle.className"
     />
     
-      <LControl position="topright" >
-<b-form-input placeholder="Search Food Truck"></b-form-input>
-</LControl>
-<LControl position="bottomleft" >
-  <b-alert  show dismissible><strong>Nearest Food Truck around 1Km is bounded in red </strong></b-alert>
-</LControl>
+     
+
+      <LControl position="bottomleft" >
+        <b-alert  show dismissible><strong>Nearest Food Truck around 1Km is bounded in red </strong></b-alert>
+      </LControl>
    
     </LMap> 
    
@@ -99,59 +97,67 @@ export default {
   },
   data() {
     return {
+      meDragabble : true,
+      markerZindex:800,
+      meZindex:1000,
       circle:{
         radius:1000,
         color:'red',
-        fill:true,
-        fillOpacity:1,
-        opacity:0.5,
+        fill:false,
+        fillOpacity:0,
+        opacity:1,
         className:'circle'
         },
-      zoom: 14.5,
-      center: latLng(37.7806943774082,-122.409668813219),
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-     
-      withPopup: latLng(47.41322, -1.219482),
-      withTooltip: latLng(47.41422, -1.350482),
-      currentZoom: 11.5,
-      currentCenter: latLng(47.41322, -1.219482),
-      showParagraph: false,
-      mapOptions: {
-        zoomSnap: 0.5
-      },
-      farOption :{
-          opacity:0.5
-      },
-      showMap: true,
-      icon: L.icon({
-        iconUrl: 'serving-dish.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 37]
-      }),
-       iconNext: L.icon({
-        iconUrl: 'serving-dish-bw.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 37]
-      }),
-       me: L.icon({
-        iconUrl: 'location.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 37]
-      }),
-       initialLocation: [59.93428, 30.335098]
+        places:[],
+        zoom: 14.5,
+        center: latLng(37.7806943774082,-122.409668813219),
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+        selected:null,
+        withPopup: latLng(47.41322, -1.219482),
+        withTooltip: latLng(47.41422, -1.350482),
+        currentZoom: 11.5,
+        currentCenter: null,
+        showParagraph: false,
+        mapOptions: {
+          zoomSnap: 0.5
+        },
+        farOption :{
+            opacity:1
+        },
+        showMap: true,
+        icon: L.icon({
+          iconUrl: 'serving-dish.png',
+          iconSize: [32, 32],
+          iconAnchor: [16, 37]
+        }),
+        iconNext: L.icon({
+          iconUrl: 'serving-dish-bw.png',
+          iconSize: [32, 32],
+          iconAnchor: [16, 37]
+        }),
+        me: L.icon({
+          iconUrl: 'location.png',
+          iconSize: [32, 32],
+          iconAnchor: [16, 37]
+        }),
+        initialLocation: [59.93428, 30.335098]
 
     };
+  },
+  created(){
+    
+    
   },
   computed:{
     allFoodTrucks:{
       get(){
-       // console.log("Called from getters",store.getters['getAllFoodShop']);
-       // console.log(state)
-      
-      return this.$store.getters.getAllFoodTrucks;
- 
-      },
+        try{
+          return this.$store.getters.getAllFoodTrucks;
+        }catch(error){
+          console.log("Error on allFoodTruks/computed :");
+        }        
+       },
       set(val){
         return val;
       }
@@ -161,42 +167,41 @@ export default {
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
-    
+    myLat(point){
+      console.log(point)
+      this.center=point;
+    },
     setLatLng(lat,lng){
       return latLng(parseFloat(lat),parseFloat(lng));
     },
     distance(lat1, lon1, lat2, lon2) {
-	if ((lat1 == lat2) && (lon1 == lon2)) {
-		return 0;
-	}
-	else {
-		var radlat1 = Math.PI * lat1/180;
-		var radlat2 = Math.PI * lat2/180;
-		var theta = lon1-lon2;
-		var radtheta = Math.PI * theta/180;
-		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-		if (dist > 1) {
-			dist = 1;
-		}
-		dist = Math.acos(dist);
-		dist = dist * 180/Math.PI;
-		dist = dist * 60 * 1.1515;
-    /*
-		if (unit=="K") { dist = dist * 1.609344 }
-    if (unit=="m") { dist = dist * 1.609344*1000 }
-		if (unit=="N") { dist = dist * 0.8684 }*/
-    dist= dist * 1.609344*1000
-		return dist;
-	}
-},
-farFoodTruck(lat1, lon1, lat2, lon2){
-   console.log(parseFloat(this.distance(lat1, lon1, lat2, lon2)));
-   if(this.distance(lat1, lon1, lat2, lon2)<1000){
-     return true;
-   }else{
-     return false;
-   }
-},
+      if ((lat1 == lat2) && (lon1 == lon2)) {
+        return 0;
+      }
+      else {
+        var radlat1 = Math.PI * lat1/180;
+        var radlat2 = Math.PI * lat2/180;
+        var theta = lon1-lon2;
+        var radtheta = Math.PI * theta/180;
+        var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+        if (dist > 1) {
+          dist = 1;
+        }
+        dist = Math.acos(dist);
+        dist = dist * 180/Math.PI;
+        dist = dist * 60 * 1.1515;
+       
+        dist= dist * 1.609344*1000
+        return dist.toFixed(2);
+      }
+    },
+    farFoodTruck(lat1, lon1, lat2, lon2){
+      if(this.distance(lat1, lon1, lat2, lon2)<1000){
+        return true;
+      }else{
+        return false;
+      }
+    },
     getImg(img){
       return '../assets/'+img;
     },
@@ -217,9 +222,7 @@ farFoodTruck(lat1, lon1, lat2, lon2){
     }
   },
   mounted(){
-    //console.log(L.control.locate().addTo(map));
-    this.getAllShops();
-    console.log(latLng(47.50050343862717,-1.5998840332031252));
+       this.getAllShops();
   }
 };
 </script>

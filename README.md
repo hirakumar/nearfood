@@ -2,6 +2,16 @@
 
 This is tiny app displaying and calculating distace nearest food truck
 
+### Description
+This project is develped from Vue Javascript Framework . For state management I have used Vuex and API is used on seperate 
+directory to seperat logic and API. For UI I have used Bootstrap Vue. Some major feature of the developed app are as follows:
+
+* Developed in Vue JS Framework
+* Statemangement in Vuex
+* UI done in Bootstrap Vue
+* Axio is used to call API
+* Leaflet API is used to track location of of San Francisco Data
+
 ## How to install
 
 * Make sure you have Git and Vue CLI install on your PC .
@@ -12,7 +22,7 @@ This is tiny app displaying and calculating distace nearest food truck
 * To start the project type `npm start`
 
 
-## Features
+## APP Features
 * Initialize your geo location to find near food truck. 
 * If you are not from sanfansisco then it will redirect into sanfansisco map
 * Check near food truck with in the boundary of 1 Kilometer distance

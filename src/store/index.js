@@ -10,11 +10,8 @@ export default new Vuex.Store({
     foodTrucks:[]
   },
   mutations: {
-    setAllFoodShop : function({commit, state,context},data){
-      console.log("Mutation setallfood:", data);
-      this.state.foodTrucks=data;
-     
-
+    setAllFoodShop : function({commit, state,context},data){     
+      this.state.foodTrucks=data; 
     }
   },
   getters:{
@@ -30,8 +27,7 @@ export default new Vuex.Store({
      
    
        API.getAllFoodShopData().then((response)=>{
-        console.log("resolve");
-       
+              
         var foodTrucks = response.data.filter(item => item.facilitytype === "Truck").map((item)=>{
           return {
             id: item.objectid,
@@ -39,9 +35,7 @@ export default new Vuex.Store({
             address : item.address,
             foodItems : item.fooditems,
             latitude : item.latitude,
-            longitude: item.longitude,
-          
-            
+            longitude: item.longitude,            
 
           }
         })

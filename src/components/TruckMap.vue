@@ -25,7 +25,7 @@
               <p v-html="loc.address">
                 </p>
                 <p>
-              Farest : {{distance(center.lat,center.lng,loc.latitude,loc.longitude)}}
+              Distance : {{distance(center.lat,center.lng,loc.latitude,loc.longitude)}}
               </p>
                 <p>
                   <b-button>Order Food Item</b-button>
@@ -38,7 +38,7 @@
             <div @click="innerClick">
               <h5 v-html="loc.name"></h5>
               <p>
-              Farest : {{distance(center.lat,center.lng,loc.latitude,loc.longitude)}}
+              Distance : {{distance(center.lat,center.lng,loc.latitude,loc.longitude)}}
               </p>
               <p v-html="loc.foodItems">          
               </p>
@@ -141,13 +141,14 @@ export default {
           iconSize: [32, 32],
           iconAnchor: [16, 37]
         }),
-        initialLocation: [59.93428, 30.335098]
+        
 
     };
   },
   created(){
-    
-    
+ 
+
+   this.getLocation();
   },
   computed:{
     allFoodTrucks:{
@@ -167,8 +168,26 @@ export default {
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
+    getLocation() {
+  if (navigator.geolocation) {
+    console.log(navigator.geolocation.getCurrentPosition(this.showPosition));
+  } else {
+    console.log("Geolocation is not supported by this browser.");
+  }
+},
+    showPosition(position) {
+      return (
+        this.distance(37.7806943774082,-122.409668813219,position.coords.latitude,position.coords.longitude) > 500 ? 
+        this.notFromSanfansico()      
+        : this.center = latLng(37.7806943774082,-122.409668813219)
+      )
+    },
+    notFromSanfansico(){
+      this.center=latLng(37.7806943774082,-122.409668813219); 
+      alert("You are not from san francisco. So map will redirecting into san francisco to get local food truck location");
+    },
     myLat(point){
-      console.log(point)
+      //console.log(point)
       this.center=point;
     },
     setLatLng(lat,lng){

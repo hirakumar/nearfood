@@ -40,3 +40,6 @@ Thanks for opensource and free API provider to make simply and easy
 * Thanks for https://data.sfgov.org for JSON data of San Francisco Data
 * UI Component from Bootstrap Vue https://bootstrap-vue.js.org/
 * Javascript Framework https://vuejs.org/
+
+### Demo
+https://github.com/hirakumar/nearfood
